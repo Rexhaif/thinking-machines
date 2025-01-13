@@ -1,0 +1,20 @@
+name: thinking-machines
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  # Basic scientific stack
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - ipython
+  - jupyter
+  # Development tools
+  - black
+  - flake8
+  - pytest
+  - pip:
+    - --index-url https://pypi.org/simple 
