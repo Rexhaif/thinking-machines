@@ -55,19 +55,17 @@ def create_progress_bar(value: int | str, total: int | str, color: str = "cyan")
     return f"{bar} {value}/{total}"
 
 def calculate_step_cost(token_usage: Dict[str, Any], pricing: Dict[str, float]) -> Dict[str, float]:
-    """Calculate the cost breakdown of a step based on token usage and pricing."""
-    effective_tokens = token_usage['prompt_tokens'] - token_usage['cached_tokens']
-    
-    # Calculate costs per token type (converting from per 1M tokens to per token)
-    input_cost = (effective_tokens * pricing['input_tokens']) / 1_000_000
-    cached_cost = (token_usage['cached_tokens'] * pricing['cached_tokens']) / 1_000_000
-    output_cost = (token_usage['completion_tokens'] * pricing['output_tokens']) / 1_000_000
+    """Calculate cost breakdown for a step."""
+    input_cost = token_usage['prompt_tokens'] * (pricing['input_tokens'] / 1_000_000)
+    cached_cost = token_usage['cached_tokens'] * (pricing['cached_tokens'] / 1_000_000)
+    output_cost = token_usage['completion_tokens'] * (pricing['output_tokens'] / 1_000_000)
+    total_cost = input_cost + cached_cost + output_cost
     
     return {
         'input_cost': input_cost,
         'cached_cost': cached_cost,
         'output_cost': output_cost,
-        'total_cost': input_cost + cached_cost + output_cost
+        'total_cost': total_cost
     }
 
 def create_token_stats(token_usage: Dict[str, Any], pricing: Optional[Dict[str, float]] = None) -> Table:
@@ -105,15 +103,14 @@ def create_token_stats(token_usage: Dict[str, Any], pricing: Optional[Dict[str, 
         costs = calculate_step_cost(token_usage, pricing)
         stats.add_row(
             "[bold magenta]Cost:[/bold magenta]",
-            f"[magenta]Input: ${costs['input_cost']:.4f}[/magenta]",
-            f"[magenta]Cached: ${costs['cached_cost']:.4f}[/magenta]",
-            f"[magenta]Output: ${costs['output_cost']:.4f}[/magenta]"
+            f"[magenta]Input: ${costs['input_cost']:.6f}[/magenta]",
+            f"[magenta]Cached: ${costs['cached_cost']:.6f}[/magenta]",
+            f"[magenta]Output: ${costs['output_cost']:.6f}[/magenta]"
         )
         stats.add_row(
             "[bold magenta]Total:[/bold magenta]",
-            f"[bold magenta]${costs['total_cost']:.4f}[/bold magenta]"
+            f"[bold magenta]${costs['total_cost']:.6f}[/bold magenta]"
         )
-        return stats
     
     return stats
 
@@ -280,10 +277,12 @@ def display_error(message: str):
 
 def display_total_cost_summary(total_costs: Dict[str, float]):
     """Display a detailed summary of total costs."""
-    console.print(
-        f"\n[magenta]Cost Summary:[/magenta] "
-        f"[magenta]Input: ${total_costs['input_cost']:.4f}[/magenta] | "
-        f"[magenta]Cached: ${total_costs['cached_cost']:.4f}[/magenta] | "
-        f"[magenta]Output: ${total_costs['output_cost']:.4f}[/magenta] | "
-        f"[bold magenta]Total: ${total_costs['total_cost']:.4f}[/bold magenta]\n"
-    ) 
+    cost_table = Table.grid(padding=(0, 2))
+    cost_table.add_row(
+        "[bold magenta]Cost Summary:[/bold magenta]",
+        f"[magenta]Input: ${total_costs['input_cost']:.6f}[/magenta]",
+        f"[magenta]Cached: ${total_costs['cached_cost']:.6f}[/magenta]",
+        f"[magenta]Output: ${total_costs['output_cost']:.6f}[/magenta]",
+        f"[bold magenta]Total: ${total_costs['total_cost']:.6f}[/bold magenta]"
+    )
+    console.print(cost_table) 

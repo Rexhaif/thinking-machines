@@ -39,6 +39,7 @@ class SessionConfig:
     temperature: float
     max_tokens: int
     top_p: float
+    enforce_json_response: bool
 
 @dataclass
 class ReasoningTrace:
@@ -122,7 +123,8 @@ def think(
             base_url=provider_config.base_url,
             temperature=provider_config.temperature,
             max_tokens=provider_config.max_tokens,
-            top_p=provider_config.top_p
+            top_p=provider_config.top_p,
+            enforce_json_response=provider_config.enforce_json_response
         )
 
         # Create debug directory only if debug mode is enabled
@@ -141,7 +143,8 @@ def think(
             temperature=config.temperature,
             max_tokens=config.max_tokens,
             top_p=config.top_p,
-            debug_dir=debug_dir
+            debug_dir=debug_dir,
+            enforce_json_response=config.enforce_json_response
         )
         
         # Initialize total costs

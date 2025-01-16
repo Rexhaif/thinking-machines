@@ -18,6 +18,7 @@ class ProviderConfig:
     frequency_penalty: float
     presence_penalty: float
     pricing: Dict[str, float]  # Pricing information per 1M tokens
+    enforce_json_response: bool  # Whether to enforce JSON object response format
 
 class ProviderManager:
     def __init__(self, providers_dir: Path = Path("providers")):
@@ -77,7 +78,8 @@ class ProviderManager:
                 "input_tokens": 0.0,
                 "cached_tokens": 0.0,
                 "output_tokens": 0.0
-            })
+            }),
+            enforce_json_response=bool(config.get("enforce_json_response", True))
         )
     
     def list_providers(self) -> list[str]:
